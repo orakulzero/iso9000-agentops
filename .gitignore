@@ -1,0 +1,35 @@
+# Ephemeral AgentOps & Supergraph State
+.supergraph/
+.agents-learning/
+.monitor/
+.agents/teamwork/
+
+# Python Bytecode & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# Packaging & Distribution
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Pytest & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.hypothesis/
+
+# Secrets, Keys, Databases & Local Environment
+*.db
+*.sqlite
+*.sqlite3
+*.key
+*.pem
+.env
+.env.*

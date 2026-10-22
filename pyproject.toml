@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "iso9000-agentops"
+version = "1.0.0"
+description = "ISO 9001:2015 / Agile V / AgentOps Quality Pipeline Orchestrator with HMAC Gate Seals, Self-Grading Bias Prevention, Planarian Asymmetric Rollback, W3C PROV-DM Audit Chains, and CAPA Memory Consolidation."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "orakulzero", email = "129319184+orakulzero@users.noreply.github.com" }
+]
+keywords = [
+    "iso-9001",
+    "agile-v",
+    "agentops",
+    "mcp",
+    "quality-management",
+    "prov-dm",
+    "capa",
+    "ai-safety"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+iso9000-agentops = "iso9000_agentops.cli:main"
+iso9000-agentops-mcp = "iso9000_agentops.mcp_server:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["iso9000_agentops*"]
