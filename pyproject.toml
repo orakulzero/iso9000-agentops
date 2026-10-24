@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "iso9000-agentops"
-version = "1.0.0"
+version = "1.1.0"
 description = "ISO 9001:2015 / Agile V / AgentOps Quality Pipeline Orchestrator with HMAC Gate Seals, Self-Grading Bias Prevention, Planarian Asymmetric Rollback, W3C PROV-DM Audit Chains, and CAPA Memory Consolidation."
 readme = "README.md"
 requires-python = ">=3.10"
