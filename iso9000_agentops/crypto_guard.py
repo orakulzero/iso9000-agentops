@@ -427,3 +427,76 @@ def evaluate_pre_tool_guard(
         "decision": "allow",
         "reason": "Permitted by ISO 9001:2015 PreToolUse guard.",
     }
+
+
+def build_prov_hash_chain(
+    activities: list[dict[str, Any]], initial_prev_hash: str = ""
+) -> list[dict[str, Any]]:
+    """Build a tamper-evident W3C PROV-DM SHA-256 hash chain over activity records."""
+    chain: list[dict[str, Any]] = []
+    current_prev = initial_prev_hash
+    for i, act in enumerate(activities):
+        prev_hash = current_prev if i == 0 else chain[i - 1]["entry_hash"]
+        filtered = {k: v for k, v in act.items() if k not in ("prev_hash", "entry_hash")}
+        canonical_json = json.dumps(filtered, sort_keys=True, separators=(",", ":"))
+        payload = f"{canonical_json}{prev_hash}".encode("utf-8")
+        entry_hash = hashlib.sha256(payload).hexdigest()
+
+        entry = dict(filtered)
+        entry["prev_hash"] = prev_hash
+        entry["entry_hash"] = entry_hash
+        chain.append(entry)
+        current_prev = entry_hash
+    return chain
+
+
+def verify_prov_hash_chain(
+    chain: list[dict[str, Any]], initial_prev_hash: str = ""
+) -> dict[str, Any]:
+    """Verify cryptographic integrity of a W3C PROV-DM activity hash chain."""
+    if not chain:
+        return {
+            "valid": True,
+            "chain_length": 0,
+            "tampered_indices": [],
+            "head_hash": "",
+        }
+
+    tampered_indices: list[int] = []
+    for i, entry in enumerate(chain):
+        if not isinstance(entry, dict):
+            tampered_indices.append(i)
+            continue
+
+        expected_prev = initial_prev_hash if i == 0 else chain[i - 1].get("entry_hash", "")
+        actual_prev = entry.get("prev_hash")
+        actual_entry_hash = entry.get("entry_hash")
+
+        if (
+            not isinstance(actual_entry_hash, str)
+            or len(actual_entry_hash) != 64
+            or not all(c in "0123456789abcdefABCDEF" for c in actual_entry_hash)
+        ):
+            tampered_indices.append(i)
+            continue
+
+        if actual_prev != expected_prev:
+            tampered_indices.append(i)
+            continue
+
+        filtered = {k: v for k, v in entry.items() if k not in ("prev_hash", "entry_hash")}
+        canonical_json = json.dumps(filtered, sort_keys=True, separators=(",", ":"))
+        payload = f"{canonical_json}{actual_prev}".encode("utf-8")
+        recomputed = hashlib.sha256(payload).hexdigest()
+
+        if recomputed.lower() != actual_entry_hash.lower():
+            tampered_indices.append(i)
+
+    head_hash = str(chain[-1].get("entry_hash", "")) if chain else ""
+    return {
+        "valid": len(tampered_indices) == 0,
+        "chain_length": len(chain),
+        "tampered_indices": tampered_indices,
+        "head_hash": head_hash,
+    }
+
