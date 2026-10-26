@@ -10,7 +10,7 @@ import os
 import re
 import secrets
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 
 def _parse_scalar(val: str) -> Any:
@@ -499,4 +499,151 @@ def verify_prov_hash_chain(
         "tampered_indices": tampered_indices,
         "head_hash": head_hash,
     }
+
+
+def build_merkle_audit_tree(leaf_payloads: Sequence[bytes]) -> dict[str, Any]:
+    """Build a binary Merkle audit tree with RFC 6962 domain separation.
+
+    Uses leaf prefix b'\\x00' and internal node prefix b'\\x01'.
+    If the node count at any level is odd, the last node is duplicated.
+
+    Args:
+        leaf_payloads: Sequence of arbitrary byte payloads to store at leaves.
+
+    Returns:
+        Dict with keys:
+            - root: Hex string of Merkle root (empty string if no leaves).
+            - levels: List of levels from leaf level (0) to root level (depth-1).
+            - leaf_count: Number of original leaf payloads.
+    """
+    if not leaf_payloads:
+        return {
+            "root": "",
+            "levels": [],
+            "leaf_count": 0,
+        }
+
+    # Level 0: Hash leaf payloads with RFC 6962 leaf prefix b'\\x00'
+    current_level: list[str] = [
+        hashlib.sha256(b"\x00" + bytes(payload)).hexdigest()
+        for payload in leaf_payloads
+    ]
+
+    levels: list[list[str]] = [list(current_level)]
+
+    # Climb the tree until a single root node remains
+    while len(current_level) > 1:
+        # If odd count, duplicate the last node to form balanced pairs
+        if len(current_level) % 2 == 1:
+            paired_nodes = list(current_level) + [current_level[-1]]
+        else:
+            paired_nodes = current_level
+
+        next_level: list[str] = []
+        for i in range(0, len(paired_nodes), 2):
+            left_bytes = bytes.fromhex(paired_nodes[i])
+            right_bytes = bytes.fromhex(paired_nodes[i + 1])
+            # RFC 6962 internal node prefix b'\\x01'
+            parent_hash = hashlib.sha256(b"\x01" + left_bytes + right_bytes).hexdigest()
+            next_level.append(parent_hash)
+
+        levels.append(next_level)
+        current_level = next_level
+
+    return {
+        "root": current_level[0],
+        "levels": levels,
+        "leaf_count": len(leaf_payloads),
+    }
+
+
+def generate_merkle_inclusion_proof(
+    tree: dict[str, Any],
+    leaf_index: int,
+) -> list[tuple[str, str]]:
+    """Generate an O(log N) inclusion proof for a leaf in the Merkle audit tree.
+
+    Args:
+        tree: The Merkle tree dict returned by build_merkle_audit_tree.
+        leaf_index: 0-based index of the target leaf.
+
+    Returns:
+        List of (sibling_hash_hex, position) tuples, where position is 'left'
+        or 'right', ordered from leaf level upward to root.
+
+    Raises:
+        IndexError: If leaf_index is negative or >= leaf_count.
+    """
+    leaf_count = tree.get("leaf_count", 0)
+    if leaf_index < 0 or leaf_index >= leaf_count:
+        raise IndexError(
+            f"Leaf index {leaf_index} out of bounds for tree with {leaf_count} leaves."
+        )
+
+    # A single-leaf tree has no siblings; proof is empty
+    if leaf_count <= 1:
+        return []
+
+    levels: list[list[str]] = tree.get("levels", [])
+    proof: list[tuple[str, str]] = []
+    curr_idx = leaf_index
+
+    # Traverse from level 0 up to the level below root
+    for level in levels[:-1]:
+        if len(level) % 2 == 1:
+            nodes = list(level) + [level[-1]]
+        else:
+            nodes = level
+
+        if curr_idx % 2 == 0:
+            sibling_idx = curr_idx + 1
+            position = "right"
+        else:
+            sibling_idx = curr_idx - 1
+            position = "left"
+
+        proof.append((nodes[sibling_idx], position))
+        curr_idx = curr_idx // 2
+
+    return proof
+
+
+def verify_merkle_inclusion_proof(
+    leaf_payload: bytes,
+    proof: Sequence[tuple[str, str]],
+    expected_root: str,
+) -> bool:
+    """Verify an O(log N) Merkle inclusion proof against an expected root hash.
+
+    Recomputes the leaf hash using RFC 6962 prefix b'\\x00' and climbs the proof
+    chain using prefix b'\\x01'.
+
+    Args:
+        leaf_payload: Raw bytes of the leaf to verify.
+        proof: Sequence of (sibling_hash_hex, position) tuples.
+        expected_root: Expected Merkle root hex string.
+
+    Returns:
+        True if the computed root matches expected_root, False otherwise.
+    """
+    if not expected_root:
+        return False
+
+    # Compute initial leaf hash with RFC 6962 leaf domain separator
+    curr_bytes = hashlib.sha256(b"\x00" + bytes(leaf_payload)).digest()
+
+    for sibling_hex, position in proof:
+        try:
+            sibling_bytes = bytes.fromhex(sibling_hex)
+        except (ValueError, TypeError):
+            return False
+
+        if position == "left":
+            curr_bytes = hashlib.sha256(b"\x01" + sibling_bytes + curr_bytes).digest()
+        elif position == "right":
+            curr_bytes = hashlib.sha256(b"\x01" + curr_bytes + sibling_bytes).digest()
+        else:
+            return False
+
+    return curr_bytes.hex().lower() == expected_root.strip().lower()
 

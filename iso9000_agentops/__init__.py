@@ -2,16 +2,19 @@
 
 from __future__ import annotations
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 from iso9000_agentops.cli import run_cli
 from iso9000_agentops.crypto_guard import (
+    build_merkle_audit_tree,
     build_prov_hash_chain,
     compute_gate1_hmac,
     dump_yaml_contract,
     evaluate_pre_tool_guard,
+    generate_merkle_inclusion_proof,
     parse_yaml_or_json,
     verify_gate1_hmac,
+    verify_merkle_inclusion_proof,
     verify_prov_hash_chain,
 )
 from iso9000_agentops.diff_tour import (
@@ -39,6 +42,7 @@ __all__ = [
     "VALID_EPISTEMIC_BASES",
     "audit_git_repository",
     "build_diff_tour",
+    "build_merkle_audit_tree",
     "build_prov_hash_chain",
     "clear_git_blob_cache",
     "compute_diff_tour_risk_score",
@@ -46,6 +50,7 @@ __all__ = [
     "drop_revealing_asks",
     "dump_yaml_contract",
     "evaluate_pre_tool_guard",
+    "generate_merkle_inclusion_proof",
     "handle_mcp_request",
     "install_hooks",
     "parse_yaml_or_json",
@@ -55,5 +60,6 @@ __all__ = [
     "validate_diff_tour",
     "verify_gate1_hmac",
     "verify_git_reference",
+    "verify_merkle_inclusion_proof",
     "verify_prov_hash_chain",
 ]
