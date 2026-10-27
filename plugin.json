@@ -1,0 +1,12 @@
+{
+  "name": "iso9000-agentops",
+  "displayName": "ISO 9001:2015 & ISO/IEC 42001:2023 Agile V Quality Pipeline",
+  "description": "6-Echelon AgentOps QMS with Bidirectional Agile V RTM, ISO/IEC 42001 AIMS & ISO 31000 FMEA RPN Engine, HMAC Gate 1 seals, RFC 6962 Merkle Audit Trees, and SARIF 2.1.0 Quality Certificates.",
+  "version": "2.0.0",
+  "logo": "assets/logo.svg",
+  "suggestedPrompts": [
+    "Build a bidirectional Agile V Requirements Traceability Matrix (rtm)",
+    "Run ISO/IEC 42001:2023 AIMS and ISO 31000 FMEA risk assessment (fmea)",
+    "Issue a signed ISO 9001 / 42001 quality certificate and SARIF 2.1.0 report (certify)"
+  ]
+}

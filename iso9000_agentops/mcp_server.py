@@ -1,4 +1,4 @@
-"""JSON-RPC 2.0 Model Context Protocol (MCP) Server for ISO 9001:2015 AgentOps."""
+"""JSON-RPC 2.0 Model Context Protocol (MCP) Server for ISO 9001:2015 & ISO/IEC 42001:2023 AgentOps (REQ-ISO-204)."""
 
 from __future__ import annotations
 
@@ -66,13 +66,48 @@ MCP_TOOLS_SCHEMA: list[dict[str, Any]] = [
             },
         },
     },
+    {
+        "name": "iso9000_traceability_matrix",
+        "description": "Build bidirectional Agile V Requirements Traceability Matrix (RTM) and Markdown report.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "source": {"type": "string"},
+                "tests": {"type": "string"},
+            },
+        },
+    },
+    {
+        "name": "iso9000_fmea_42001_assess",
+        "description": "Compute ISO 31000 FMEA RPN profile and ISO/IEC 42001:2023 Statement of Applicability.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "modes": {
+                    "type": "array",
+                    "items": {"type": "object"},
+                }
+            },
+        },
+    },
+    {
+        "name": "iso9000_issue_certificate",
+        "description": "Issue HMAC-SHA256 quality certificate, SVG badge, and OASIS SARIF 2.1.0 report.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "source": {"type": "string"},
+                "tests": {"type": "string"},
+            },
+        },
+    },
 ]
 
 
 def handle_mcp_request(
     request: dict[str, Any], workspace: Path | str | None = None
 ) -> dict[str, Any]:
-    """Process a single JSON-RPC 2.0 MCP request and return the JSON-RPC 2.0 response."""
+    """Process a single JSON-RPC 2.0 MCP request and return the JSON-RPC 2.0 response (REQ-ISO-204)."""
     ws = Path(workspace).resolve() if workspace is not None else Path.cwd().resolve()
     req_id = request.get("id")
     method = str(request.get("method") or "")
@@ -87,7 +122,7 @@ def handle_mcp_request(
                 "capabilities": {"tools": {"listChanged": False}},
                 "serverInfo": {
                     "name": "iso9000-agentops-mcp",
-                    "version": "1.0.0",
+                    "version": "2.0.0",
                 },
             },
         }
@@ -136,7 +171,7 @@ def handle_mcp_request(
                         str(ws),
                         "verify",
                         "--cmd",
-                        str(args.get("cmd", "python -c \"import sys; sys.exit(0)\"")),
+                        str(args.get("cmd", 'python -c "import sys; sys.exit(0)"')),
                     ]
                 )
             elif tool_name == "iso9000_get_audit_chain":
@@ -159,6 +194,25 @@ def handle_mcp_request(
                             str(args.get("skill_name", "iso9000-learned-skill")),
                         ]
                     )
+                out = run_cli(cli_args)
+            elif tool_name == "iso9000_traceability_matrix":
+                cli_args = ["--workspace", str(ws), "rtm"]
+                if args.get("source"):
+                    cli_args.extend(["--source", str(args["source"])])
+                if args.get("tests"):
+                    cli_args.extend(["--tests", str(args["tests"])])
+                out = run_cli(cli_args)
+            elif tool_name == "iso9000_fmea_42001_assess":
+                cli_args = ["--workspace", str(ws), "fmea"]
+                if args.get("modes") is not None:
+                    cli_args.extend(["--modes-json", json.dumps(args["modes"])])
+                out = run_cli(cli_args)
+            elif tool_name == "iso9000_issue_certificate":
+                cli_args = ["--workspace", str(ws), "certify"]
+                if args.get("source"):
+                    cli_args.extend(["--source", str(args["source"])])
+                if args.get("tests"):
+                    cli_args.extend(["--tests", str(args["tests"])])
                 out = run_cli(cli_args)
             else:
                 return {
@@ -198,7 +252,7 @@ def handle_mcp_request(
 
 
 def main() -> None:
-    """Run stdio JSON-RPC 2.0 MCP loop."""
+    """Run stdio JSON-RPC 2.0 MCP loop (REQ-ISO-204)."""
     for line in sys.stdin:
         stripped = line.strip()
         if not stripped:

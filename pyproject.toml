@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "iso9000-agentops"
-version = "1.3.0"
-description = "ISO 9001:2015 / Agile V / AgentOps Quality Pipeline Orchestrator with HMAC Gate Seals, Self-Grading Bias Prevention, Planarian Asymmetric Rollback, W3C PROV-DM Audit Chains, and CAPA Memory Consolidation."
+version = "2.0.0"
+description = "ISO 9001:2015 / ISO/IEC 42001:2023 / Agile V Quality Pipeline Orchestrator with Bidirectional RTM, ISO 31000 FMEA RPN Engine, Cryptographic Quality Certificates, SARIF 2.1.0, W3C PROV-DM & RFC 6962 Merkle Audit Trees."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -14,7 +14,10 @@ authors = [
 ]
 keywords = [
     "iso-9001",
+    "iso-42001",
     "agile-v",
+    "fmea",
+    "sarif",
     "agentops",
     "mcp",
     "quality-management",
@@ -39,6 +42,7 @@ dependencies = []
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
+    "hypothesis>=6.0.0",
 ]
 
 [project.scripts]
