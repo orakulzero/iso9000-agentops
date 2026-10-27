@@ -48,9 +48,10 @@ except ImportError:
 
 
 def test_v1_3_version_bump() -> None:
-    """Verify package version is bumped to 1.3.0 in iso9000_agentops."""
+    """Verify package version is at least 1.3.0 in iso9000_agentops."""
     import iso9000_agentops
-    assert iso9000_agentops.__version__ == "1.3.0"
+    parts = tuple(int(x) for x in iso9000_agentops.__version__.split(".")[:3])
+    assert parts >= (1, 3, 0)
 
 
 def test_v1_3_merkle_re_exports_top_level() -> None:

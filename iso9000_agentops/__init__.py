@@ -10,9 +10,12 @@ from iso9000_agentops.aims_42001 import (
     generate_iso42001_soa,
 )
 from iso9000_agentops.certificate import (
+    certify_ecosystem_portfolio,
+    export_portfolio_sarif_report,
     export_sarif_report,
     issue_quality_certificate,
     render_compliance_badge_svg,
+    render_portfolio_badge_svg,
     verify_quality_certificate,
 )
 from iso9000_agentops.cli import run_cli
@@ -63,6 +66,7 @@ __all__ = [
     "build_merkle_audit_tree",
     "build_prov_hash_chain",
     "build_requirements_traceability_matrix",
+    "certify_ecosystem_portfolio",
     "clear_git_blob_cache",
     "compute_diff_tour_risk_score",
     "compute_fmea_rpn",
@@ -70,6 +74,7 @@ __all__ = [
     "drop_revealing_asks",
     "dump_yaml_contract",
     "evaluate_pre_tool_guard",
+    "export_portfolio_sarif_report",
     "export_sarif_report",
     "extract_code_req_links",
     "extract_test_req_links",
@@ -81,6 +86,7 @@ __all__ = [
     "parse_yaml_or_json",
     "render_compliance_badge_svg",
     "render_diff_tour_markdown",
+    "render_portfolio_badge_svg",
     "render_rtm_markdown",
     "run_cli",
     "sanitize_own_target_framing",

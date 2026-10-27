@@ -101,7 +101,23 @@ MCP_TOOLS_SCHEMA: list[dict[str, Any]] = [
             },
         },
     },
+    {
+        "name": "iso_certify_portfolio",
+        "description": "Certify multi-repository ecosystem portfolio, aggregating RTM coverage, max FMEA RPN, SoA controls, and Merkle tree root.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "portfolio_name": {"type": "string", "default": "Ecosystem Portfolio"},
+                "version": {"type": "string", "default": "2.0.0"},
+                "repository_reports": {"type": "object", "description": "Dictionary mapping repository names to their report dictionaries."},
+                "secret": {"type": "string", "default": "default-iso9000-cert-secret"},
+            },
+            "required": ["repository_reports"],
+        },
+    },
 ]
+
+MCP_TOOLS = MCP_TOOLS_SCHEMA
 
 
 def handle_mcp_request(
@@ -214,6 +230,18 @@ def handle_mcp_request(
                 if args.get("tests"):
                     cli_args.extend(["--tests", str(args["tests"])])
                 out = run_cli(cli_args)
+            elif tool_name == "iso_certify_portfolio":
+                from iso9000_agentops.certificate import certify_ecosystem_portfolio
+                port_name = str(args.get("portfolio_name") or "Ecosystem Portfolio")
+                port_ver = str(args.get("version") or "2.0.0")
+                repo_reports = args.get("repository_reports") or {}
+                secret = str(args.get("secret") or "default-iso9000-cert-secret")
+                out = certify_ecosystem_portfolio(
+                    portfolio_name=port_name,
+                    version=port_ver,
+                    repository_reports=repo_reports,
+                    secret=secret,
+                )
             else:
                 return {
                     "jsonrpc": "2.0",

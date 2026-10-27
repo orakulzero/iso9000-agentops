@@ -17,6 +17,7 @@ from iso9000_agentops.aims_42001 import (
     generate_iso42001_soa,
 )
 from iso9000_agentops.certificate import (
+    certify_ecosystem_portfolio,
     export_sarif_report,
     issue_quality_certificate,
     render_compliance_badge_svg,
@@ -206,6 +207,14 @@ def run_cli(argv: list[str] | None = None) -> dict[str, Any]:
     p_cert.add_argument("--source", "--src", dest="source", default=None)
     p_cert.add_argument("--tests", default=None)
     p_cert.add_argument("--reqs", default=None)
+
+    # 13. certify-portfolio (v2.0.0 REQ-ISO-205)
+    p_cert_port = subparsers.add_parser("certify-portfolio")
+    p_cert_port.add_argument("--portfolio-json", required=True, help="Path or raw JSON string of portfolio repository reports")
+    p_cert_port.add_argument("--name", default="Antigravity Ecosystem", help="Portfolio name")
+    p_cert_port.add_argument("--version", default="2.0.0", help="Portfolio version")
+    p_cert_port.add_argument("--output", default=None, help="Output file path for portfolio certificate JSON")
+    p_cert_port.add_argument("--secret", default="default-iso9000-cert-secret", help="HMAC secret for certificate signing")
 
     ns, _ = parser.parse_known_args(remaining)
     cmd = ns.subcommand
@@ -724,6 +733,51 @@ def run_cli(argv: list[str] | None = None) -> dict[str, Any]:
             "certificate": cert,
             "rtm": rtm_report,
             "fmea": fmea_report,
+        }
+
+    if cmd == "certify-portfolio":
+        raw_json = str(ns.portfolio_json).strip()
+        p_json = Path(raw_json)
+        if p_json.is_file():
+            loaded = json.loads(p_json.read_text(encoding="utf-8"))
+        else:
+            loaded = json.loads(raw_json)
+
+        if isinstance(loaded, dict) and "repository_reports" in loaded and isinstance(loaded["repository_reports"], dict):
+            repo_reports = loaded["repository_reports"]
+        else:
+            repo_reports = loaded
+
+        port_name = str(getattr(ns, "name", None) or "Antigravity Ecosystem")
+        port_version = str(getattr(ns, "version", None) or "2.0.0")
+        secret = str(getattr(ns, "secret", None) or "default-iso9000-cert-secret")
+
+        cert = certify_ecosystem_portfolio(
+            portfolio_name=port_name,
+            version=port_version,
+            repository_reports=repo_reports,
+            secret=secret,
+        )
+
+        if ns.output:
+            out_p = Path(ns.output)
+            out_p.parent.mkdir(parents=True, exist_ok=True)
+            out_p.write_text(json.dumps(cert, indent=2), encoding="utf-8")
+
+        sg_dir.mkdir(parents=True, exist_ok=True)
+        (sg_dir / "portfolio_certificate.json").write_text(
+            json.dumps(cert, indent=2), encoding="utf-8"
+        )
+        if "badge_svg" in cert:
+            (sg_dir / "portfolio_badge.svg").write_text(cert["badge_svg"], encoding="utf-8")
+        if "sarif_report" in cert:
+            (sg_dir / "portfolio_sarif.json").write_text(
+                json.dumps(cert["sarif_report"], indent=2), encoding="utf-8"
+            )
+
+        return {
+            **cert,
+            "portfolio_certificate": cert,
         }
 
     raise ValueError(f"Unknown or missing subcommand: {cmd!r}")
