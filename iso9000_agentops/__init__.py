@@ -18,7 +18,6 @@ from iso9000_agentops.certificate import (
     render_portfolio_badge_svg,
     verify_quality_certificate,
 )
-from iso9000_agentops.cli import run_cli
 from iso9000_agentops.crypto_guard import (
     build_merkle_audit_tree,
     build_prov_hash_chain,
@@ -45,7 +44,6 @@ from iso9000_agentops.diff_tour import (
 )
 from iso9000_agentops.installer import install_hooks
 from iso9000_agentops.llm import MultiProviderLLMAdapter, sanitize_own_target_framing
-from iso9000_agentops.mcp_server import handle_mcp_request
 from iso9000_agentops.oss_audit import audit_git_repository
 from iso9000_agentops.traceability import (
     build_requirements_traceability_matrix,
@@ -97,3 +95,13 @@ __all__ = [
     "verify_prov_hash_chain",
     "verify_quality_certificate",
 ]
+
+
+def __getattr__(name: str):
+    if name == 'run_cli':
+        from iso9000_agentops.cli import run_cli
+        return run_cli
+    if name == 'handle_mcp_request':
+        from iso9000_agentops.mcp_server import handle_mcp_request
+        return handle_mcp_request
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

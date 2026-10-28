@@ -61,6 +61,7 @@ Use this skill whenever executing engineering tasks under `/iso9000-agentops`, `
    - Implement production modules strictly inside `src/` (or package directory).
    - **Self-Grading Bias Prohibition (`P30`)**: The `implementer` role is **strictly forbidden** from modifying any file in `tests/` or `.supergraph/frozen_baseline.yaml`.
    - **Traceability & Anti-Gold-Plating Rule**: Every public class, function, and method in production code MUST include its corresponding `REQ-*` ID in its docstring (`"""... (REQ-001)."""`) so `extract_code_req_links` verifies 0 unimplemented requirements and 0 gold-plated symbols.
+   - **SSE Stream Chunking Guard (`<= 180` lines / `<= 3,500` output tokens per `write_file` call)**: Never attempt to emit a monolithic multi-hundred-line file or multi-module course in a single `write_file` call (which exceeds the 240-second `streamGenerateContent?alt=sse` timeout and resets the prompt cache). Split large deliverables into modular files or sequential `write_file(..., Append=True)` chunks of `<= 180` lines each.
 
 ---
 
