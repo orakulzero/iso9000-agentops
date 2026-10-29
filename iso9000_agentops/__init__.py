@@ -43,6 +43,15 @@ from iso9000_agentops.diff_tour import (
     validate_diff_tour,
     verify_git_reference,
 )
+from iso9000_agentops.egm_drift_detector import (
+    SpecCodeDriftDetector,
+    SpecDriftReport,
+)
+from iso9000_agentops.egm_goldfish import (
+    EGM_RUBRIC_STAGES,
+    GoldfishReviewPacket,
+    GoldfishZeroContextBuilder,
+)
 from iso9000_agentops.installer import install_hooks
 from iso9000_agentops.llm import MultiProviderLLMAdapter, sanitize_own_target_framing
 from iso9000_agentops.oss_audit import audit_git_repository
@@ -59,10 +68,15 @@ __all__ = [
     "BabelArenaGate",
     "BabelAuditResult",
     "DeepTutorSOPDistiller",
+    "EGM_RUBRIC_STAGES",
+    "GoldfishReviewPacket",
+    "GoldfishZeroContextBuilder",
     "MultiProviderLLMAdapter",
     "REVIEW_DIMENSIONS",
     "SOPNode",
     "SeniorReviewDimension",
+    "SpecCodeDriftDetector",
+    "SpecDriftReport",
     "VALID_EPISTEMIC_BASES",
     "assess_failure_modes",
     "audit_git_repository",
