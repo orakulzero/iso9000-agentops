@@ -9,6 +9,7 @@ from iso9000_agentops.aims_42001 import (
     compute_fmea_rpn,
     generate_iso42001_soa,
 )
+from iso9000_agentops.babel_arena_gate import BabelArenaGate, BabelAuditResult
 from iso9000_agentops.certificate import (
     certify_ecosystem_portfolio,
     export_portfolio_sarif_report,
@@ -45,6 +46,7 @@ from iso9000_agentops.diff_tour import (
 from iso9000_agentops.installer import install_hooks
 from iso9000_agentops.llm import MultiProviderLLMAdapter, sanitize_own_target_framing
 from iso9000_agentops.oss_audit import audit_git_repository
+from iso9000_agentops.sop_distiller import DeepTutorSOPDistiller, SOPNode
 from iso9000_agentops.traceability import (
     build_requirements_traceability_matrix,
     extract_code_req_links,
@@ -54,8 +56,12 @@ from iso9000_agentops.traceability import (
 
 __all__ = [
     "__version__",
+    "BabelArenaGate",
+    "BabelAuditResult",
+    "DeepTutorSOPDistiller",
     "MultiProviderLLMAdapter",
     "REVIEW_DIMENSIONS",
+    "SOPNode",
     "SeniorReviewDimension",
     "VALID_EPISTEMIC_BASES",
     "assess_failure_modes",
@@ -98,10 +104,12 @@ __all__ = [
 
 
 def __getattr__(name: str):
-    if name == 'run_cli':
+    if name == "run_cli":
         from iso9000_agentops.cli import run_cli
+
         return run_cli
-    if name == 'handle_mcp_request':
+    if name == "handle_mcp_request":
         from iso9000_agentops.mcp_server import handle_mcp_request
+
         return handle_mcp_request
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
