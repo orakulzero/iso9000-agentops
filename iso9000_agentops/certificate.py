@@ -452,9 +452,9 @@ def certify_ecosystem_portfolio(
         ]
         repository_reports = {}
         for st in stations:
-            merkle_root = hashlib.sha256(f"merkle-{st}".encode("utf-8")).hexdigest()
-            gate1_hmac = hashlib.sha256(f"gate1-{st}".encode("utf-8")).hexdigest()
-            cert_sig = hashlib.sha256(f"sig-{st}".encode("utf-8")).hexdigest()
+            merkle_root = hashlib.sha256(f"merkle-{st}".encode()).hexdigest()
+            gate1_hmac = hashlib.sha256(f"gate1-{st}".encode()).hexdigest()
+            cert_sig = hashlib.sha256(f"sig-{st}".encode()).hexdigest()
             repository_reports[st] = {
                 "repository": st,
                 "version": str(version),
@@ -614,9 +614,8 @@ def certify_ecosystem_portfolio(
         crit_modes = []
         if isinstance(fmea_rep, dict):
             crit_modes = list(fmea_rep.get("critical_modes") or [])
-        if rpn > 400 or risk.upper() == "L4":
-            if not crit_modes:
-                crit_modes.append("FM-CRIT")
+        if (rpn > 400 or risk.upper() == "L4") and not crit_modes:
+            crit_modes.append("FM-CRIT")
         critical_fmea_count += len(crit_modes)
 
         # Status
