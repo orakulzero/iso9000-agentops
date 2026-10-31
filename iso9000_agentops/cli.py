@@ -36,6 +36,7 @@ from iso9000_agentops.traceability import (
     extract_test_req_links,
     render_rtm_markdown,
 )
+import contextlib
 
 _EXCLUDED_DIRS = {
     ".supergraph",
@@ -129,10 +130,8 @@ def _load_evidence_units(sg_dir: Path) -> list[dict[str, Any]]:
         units: list[dict[str, Any]] = []
         for line in ev_file.read_text(encoding="utf-8").splitlines():
             if line.strip():
-                try:
+                with contextlib.suppress(Exception):
                     units.append(json.loads(line))
-                except Exception:
-                    pass
         return units
     return []
 
@@ -506,10 +505,8 @@ def run_cli(argv: list[str] | None = None) -> dict[str, Any]:
         if ledger_file.is_file():
             for line in ledger_file.read_text(encoding="utf-8").splitlines():
                 if line.strip():
-                    try:
+                    with contextlib.suppress(Exception):
                         failures_list.append(json.loads(line))
-                    except Exception:
-                        pass
 
         if not existing_rules:
             existing_rules.append(
