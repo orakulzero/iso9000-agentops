@@ -56,6 +56,10 @@ from iso9000_agentops.installer import install_hooks
 from iso9000_agentops.llm import MultiProviderLLMAdapter, sanitize_own_target_framing
 from iso9000_agentops.oss_audit import audit_git_repository
 from iso9000_agentops.sop_distiller import DeepTutorSOPDistiller, SOPNode
+from iso9000_agentops.token_budget_governor import (
+    TokenBudgetGovernor,
+    ToolBudgetDecision,
+)
 from iso9000_agentops.traceability import (
     build_requirements_traceability_matrix,
     extract_code_req_links,
@@ -77,6 +81,8 @@ __all__ = [
     "SeniorReviewDimension",
     "SpecCodeDriftDetector",
     "SpecDriftReport",
+    "TokenBudgetGovernor",
+    "ToolBudgetDecision",
     "VALID_EPISTEMIC_BASES",
     "assess_failure_modes",
     "audit_git_repository",
