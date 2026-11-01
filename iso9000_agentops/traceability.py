@@ -9,8 +9,9 @@ from __future__ import annotations
 
 import ast
 import re
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 REQ_ID_RE = re.compile(r"\bREQ-[A-Z0-9]+(?:-[A-Z0-9]+)*\b")
 
@@ -91,12 +92,11 @@ def extract_code_req_links(source_root: Path | str) -> list[dict[str, Any]]:
         rel_file = py_file.relative_to(base_dir).as_posix()
 
         # Collect top-level child spans so module-level scan excludes classes/functions
-        top_child_spans: list[tuple[int, int]] = []
-        for top_node in tree.body:
-            if isinstance(top_node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
-                top_child_spans.append(
-                    (_node_start_line(top_node), _node_end_line(top_node, len(lines)))
-                )
+        top_child_spans: list[tuple[int, int]] = [
+            (_node_start_line(top_node), _node_end_line(top_node, len(lines)))
+            for top_node in tree.body
+            if isinstance(top_node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef))
+        ]
 
         mod_reqs = _extract_reqs_from_lines(lines, 1, len(lines), top_child_spans)
         mod_doc = ast.get_docstring(tree) or ""
@@ -119,12 +119,11 @@ def extract_code_req_links(source_root: Path | str) -> list[dict[str, Any]]:
             if isinstance(node, ast.ClassDef):
                 cls_start = _node_start_line(node)
                 cls_end = _node_end_line(node, len(lines))
-                method_spans: list[tuple[int, int]] = []
-                for item in node.body:
-                    if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                        method_spans.append(
-                            (_node_start_line(item), _node_end_line(item, cls_end))
-                        )
+                method_spans: list[tuple[int, int]] = [
+                    (_node_start_line(item), _node_end_line(item, cls_end))
+                    for item in node.body
+                    if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+                ]
 
                 cls_reqs = _extract_reqs_from_lines(lines, cls_start, cls_end, method_spans)
                 cls_doc = ast.get_docstring(node) or ""
@@ -405,12 +404,17 @@ def render_rtm_markdown(rtm_report: dict[str, Any]) -> str:
     ]
 
     for req_id in reqs:
-        entry = fwd.get(req_id, {})
-        code_str = ", ".join(entry.get("code_symbols") or []) or "NONE"
-        test_str = ", ".join(entry.get("test_names") or []) or "NONE"
-        ev_str = ", ".join(entry.get("evidence_hashes") or []) or "NONE"
-        is_ok = bool(entry.get("implemented")) and bool(entry.get("verified"))
-        status_str = "VERIFIED" if is_ok else "NON_CONFORMANT"
-        lines.append(f"| {req_id} | {code_str} | {test_str} | {ev_str} | {status_str} |")
+        node = fwd.get(req_id) or {}
+        code_str = "<br>".join([f"`{c}`" for c in node.get("code_symbols", [])]) or "_None_"
+        test_str = "<br>".join([f"`{t}`" for t in node.get("test_names", [])]) or "_None_"
+        ev_str = "<br>".join([f"`{e[:8]}`" for e in node.get("evidence_hashes", [])]) or "_None_"
+        
+        status = "✅" if node.get("implemented") and node.get("verified") else "❌"
+        if not node.get("implemented"):
+            status += " (No Code)"
+        elif not node.get("verified"):
+            status += " (No Test)"
+            
+        lines.append(f"| **{req_id}** | {code_str} | {test_str} | {ev_str} | {status} |")
 
     return "\n".join(lines) + "\n"
