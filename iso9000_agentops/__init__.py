@@ -52,6 +52,10 @@ from iso9000_agentops.egm_goldfish import (
     GoldfishReviewPacket,
     GoldfishZeroContextBuilder,
 )
+from iso9000_agentops.flaky_test_bifurcator import (
+    FlakyClassification,
+    FlakyTestBifurcator,
+)
 from iso9000_agentops.installer import install_hooks
 from iso9000_agentops.llm import MultiProviderLLMAdapter, sanitize_own_target_framing
 from iso9000_agentops.oss_audit import audit_git_repository
