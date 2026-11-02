@@ -11,7 +11,7 @@ Requirement Traceability:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Sequence, Set
+from collections.abc import Sequence
 
 TRANSIENT_ENV_SIGNATURES = (
     "Address already in use",
@@ -33,7 +33,7 @@ class FlakyClassification:
     allow_self_healing_code_patch: bool
     transient_env_signature: bool = False
     recommended_action: str = "NONE"
-    exit_codes: List[int] = field(default_factory=list)
+    exit_codes: list[int] = field(default_factory=list)
 
 
 class FlakyTestBifurcator:
@@ -41,7 +41,7 @@ class FlakyTestBifurcator:
 
     def __init__(self, transient_signatures: Sequence[str] = TRANSIENT_ENV_SIGNATURES) -> None:
         self._transient_signatures: tuple[str, ...] = tuple(transient_signatures)
-        self._quarantined_node_ids: Set[str] = set()
+        self._quarantined_node_ids: set[str] = set()
 
     def _has_transient_signature(self, logs: Sequence[str]) -> bool:
         """Return True if any log entry matches a known transient OS/socket signature."""
@@ -109,6 +109,6 @@ class FlakyTestBifurcator:
         if classification.is_flaky or classification.classification == "FLAKY_NON_DETERMINISTIC":
             self._quarantined_node_ids.add(classification.node_id)
 
-    def get_quarantined_tests(self) -> List[str]:
+    def get_quarantined_tests(self) -> list[str]:
         """Return sorted list of quarantined flaky test node_ids (REQ-ISO-FLAKY-01)."""
         return sorted(self._quarantined_node_ids)
