@@ -43,6 +43,9 @@ from iso9000_agentops.diff_tour import (
     validate_diff_tour,
     verify_git_reference,
 )
+from iso9000_agentops.dual_tree_verification_oracle import (
+    DualTreeVerificationOracle,
+)
 from iso9000_agentops.egm_drift_detector import (
     SpecCodeDriftDetector,
     SpecDriftReport,
@@ -76,6 +79,7 @@ __all__ = [
     "BabelArenaGate",
     "BabelAuditResult",
     "DeepTutorSOPDistiller",
+    "DualTreeVerificationOracle",
     "EGM_RUBRIC_STAGES",
     "GoldfishReviewPacket",
     "GoldfishZeroContextBuilder",
