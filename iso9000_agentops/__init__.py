@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 __version__ = "2.0.0"
+__v3_generation__ = "3.0.0"
 
 from iso9000_agentops.aims_42001 import (
     assess_failure_modes,
@@ -59,6 +60,10 @@ from iso9000_agentops.flaky_test_bifurcator import (
     FlakyClassification,
     FlakyTestBifurcator,
 )
+from iso9000_agentops.forensic_git_bisect import (
+    ForensicGitBisect,
+    run_forensic_bisect,
+)
 from iso9000_agentops.installer import install_hooks
 from iso9000_agentops.llm import MultiProviderLLMAdapter, sanitize_own_target_framing
 from iso9000_agentops.oss_audit import audit_git_repository
@@ -76,11 +81,13 @@ from iso9000_agentops.traceability import (
 
 __all__ = [
     "__version__",
+    "__v3_generation__",
     "BabelArenaGate",
     "BabelAuditResult",
     "DeepTutorSOPDistiller",
     "DualTreeVerificationOracle",
     "EGM_RUBRIC_STAGES",
+    "ForensicGitBisect",
     "GoldfishReviewPacket",
     "GoldfishZeroContextBuilder",
     "MultiProviderLLMAdapter",
@@ -121,6 +128,7 @@ __all__ = [
     "render_portfolio_badge_svg",
     "render_rtm_markdown",
     "run_cli",
+    "run_forensic_bisect",
     "sanitize_own_target_framing",
     "validate_diff_tour",
     "verify_gate1_hmac",
